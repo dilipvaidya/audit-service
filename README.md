@@ -95,6 +95,7 @@ audit database will hold audit logs to be queries later for audit purposes.
 
 <details>
 
+
 #### Available databases options 
 1. Elastic search [selected to store data for short duration and real time search queries]
 2. MongoDB [not selected]
@@ -130,6 +131,7 @@ Legend:
 audit messages are the once audit service receive from other services and write them into the audit database.
 
 <details>
+
 
 #### 📝 Audit Log Format Design Criteria
 
