@@ -37,6 +37,8 @@ Audit Service is independent, highly distributed service that supports the handl
 producer services. Producer services will generate the notifications into the message broker which audit services are 
 subscribed to. There are a couple of options for message brokers to choose from as mentioned below.
 
+<details>
+
 ### 📌 Pros & Cons Summary
 
 #### **Apache Kafka** [selected for this implementation]
@@ -84,9 +86,15 @@ subscribed to. There are a couple of options for message brokers to choose from 
    - Requires custom implementation for reliability and ordering
    - Not ideal for audit/compliance-grade systems
 
+</details>
+
 ---
 
 ### audit database
+audit database will hold audit logs to be queries later for audit purposes.
+
+<details>
+
 
 #### Available databases options 
 1. Elastic search [selected to store data for short duration and real time search queries]
@@ -115,9 +123,15 @@ Legend:
 ⚠️ = Possible with limitations / added effort  
 ❌ = Not ideal or unsupported
 
+</details>
+
 ---
 
 ### audit message format
+audit messages are the once audit service receive from other services and write them into the audit database.
+
+<details>
+
 
 #### 📝 Audit Log Format Design Criteria
 
@@ -135,9 +149,6 @@ Legend:
 | 🔐 Tamper Evident (optional)    | Signature or hash of message for integrity validation                       | Optional but important for security-sensitive environments                |
 | 💬 Extensibility                | Should support adding new fields (e.g., tags, severity) over time          | Future-proofing the schema                                                |
 | 🔎 Searchable Field Types       | Field types chosen to support fast and useful searches (e.g., keywords, nested) | Directly impacts performance in Elasticsearch or other search DBs     |
-
-
-
 
 
 ```json
@@ -315,10 +326,19 @@ PUT /audit-logs
 }
 ```
 
+</details>
 
+---
+
+### 🔐 [Audit Service API](audit_service_api_doc.md)
+
+---
 
 ### Appendix
-Message broker selection criteria comparison
+
+<details>
+
+<summary> Message broker selection criteria comparison </summary>
 
 | Criteria                | Meaning                                                                 | Kafka                        | ActiveMQ                    | RabbitMQ                   | AWS SQS                           | ZeroMQ                          |
 |------------------------|-------------------------------------------------------------------------|------------------------------|-----------------------------|----------------------------|-----------------------------------|---------------------------------|
@@ -334,3 +354,4 @@ Message broker selection criteria comparison
 | **Monitoring Tools**   | Built-in or ecosystem support for visibility                            | ✅ Rich ecosystem             | ✅ Basic tools              | ✅ Good (UI + plugins)     | ✅ CloudWatch + SDK               | ❌ None out of the box          |
 | **Maturity**           | Community, documentation, and long-term support                         | ✅ Very mature                | ✅ Mature                   | ✅ Mature                  | ✅ Backed by AWS                  | ⚠️ Niche, low-level              |
 
+</details>
