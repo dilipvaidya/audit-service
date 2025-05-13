@@ -9,8 +9,14 @@ import java.util.Optional;
 
 @Repository
 public interface AuditRepository {
+
     void save(AuditLog auditLog);
+
     List<AuditLog> findAll();
-    Optional<AuditLog> findById(String eventId);
+
+    List<AuditLog> findByUserId(String userId);
+
+    Optional<AuditLog> findByEventId(String eventId);
+
     List<AuditLog> advancedSearch(AuditSearchRequest request);
 }
