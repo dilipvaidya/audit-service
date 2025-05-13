@@ -25,6 +25,7 @@ public class AuditService {
     }
 
     public void saveAuditLog(AuditLog auditLog) {
+        //TODO: it should save to both the storages otherwise to none. write test case around it.
         this.auditRepositoryTransientDb.save(auditLog);
         this.auditRepositoryColdStorageDb.save(auditLog);
     }
@@ -44,8 +45,12 @@ public class AuditService {
         return this.auditRepositoryTransientDb.findAll();
     }
 
-    public Optional<AuditLog> findById(String eventId) {
-        return this.auditRepositoryTransientDb.findById(eventId);
+    public Optional<AuditLog> findByEventId(String eventId) {
+        return this.auditRepositoryTransientDb.findByEventId(eventId);
+    }
+
+    public List<AuditLog> findByUserId(String userId) {
+        return this.auditRepositoryTransientDb.findByUserId(userId);
     }
 
     public List<AuditLog> advancedSearch(AuditSearchRequest request) {
@@ -53,3 +58,34 @@ public class AuditService {
         return this.auditRepositoryTransientDb.advancedSearch(request);
     }
 }
+
+
+/*
+    public Optional<AuditLog> findById(String eventId) {
+        Optional<AuditLog> log = transientRepository.findById(eventId);
+        if (log.isPresent()) {
+            return log;
+        }
+        return coldStorageRepository != null ? coldStorageRepository.findById(eventId) : Optional.empty();
+    }
+
+    public List<AuditLog> advancedSearch(AuditSearchRequest request) {
+        List<AuditLog> transientResults = transientRepository.advancedSearch(request);
+        List<AuditLog> coldResults = coldStorageRepository != null ? coldStorageRepository.advancedSearch(request) : List.of();
+
+        Instant threshold = Instant.now().minus(Duration.ofDays(14));
+
+        List<AuditLog> finalResults = new ArrayList<>();
+        for (AuditLog log : transientResults) {
+            if (log.getTimestamp() != null && log.getTimestamp().isAfter(threshold)) {
+                finalResults.add(log);
+            }
+        }
+        for (AuditLog log : coldResults) {
+            if (log.getTimestamp() != null && log.getTimestamp().isBefore(threshold)) {
+                finalResults.add(log);
+            }
+        }
+        return finalResults;
+    }
+*/

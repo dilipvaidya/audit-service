@@ -18,6 +18,7 @@ public class AuditController {
     @Autowired
     private final AuditService auditService;
 
+    @Autowired
     public AuditController(AuditService auditService) {
         this.auditService = auditService;
     }
@@ -55,9 +56,15 @@ public class AuditController {
         return ResponseEntity.ok(logs);
     }
 
-    @GetMapping("/logs/{eventId}")
-    public ResponseEntity<AuditLog> getAuditLogById(@PathVariable String eventId) {
-        return auditService.findById(eventId)
+    @GetMapping("/logs/user/{userId}")
+    public ResponseEntity<List<AuditLog>> getAuditLogByUserId(@PathVariable String userId) {
+        List<AuditLog> results = auditService.findByUserId(userId);
+        return ResponseEntity.ok(results);
+    }
+
+    @GetMapping("/logs/event/{eventId}")
+    public ResponseEntity<AuditLog> getAuditLogByEventId(@PathVariable String eventId) {
+        return auditService.findByEventId(eventId)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
