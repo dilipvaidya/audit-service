@@ -1,11 +1,14 @@
 package com.dilip.audit_service.services;
 
+import com.dilip.audit_service.common.DeletionResult;
 import com.dilip.audit_service.data.entity.AuditLog;
 import com.dilip.audit_service.data.entity.AuditSearchRequest;
 import com.dilip.audit_service.data.repository.AuditRepository;
 import com.dilip.audit_service.data.repository.AuditRepositoryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,18 +33,7 @@ public class AuditService {
         this.auditRepositoryColdStorageDb.save(auditLog);
     }
 
-    public List<AuditLog> queryAuditLogs(Optional<String> startTime,
-                                         Optional<String> endTime,
-                                         Optional<String> entityType,
-                                         Optional<String> entityId,
-                                         Optional<String> eventType,
-                                         Optional<String> sourceService,
-                                         Optional<String> changedByUserId,
-                                         int page,
-                                         int size,
-                                         Optional<String> sort) {
-
-        // Stub implementation, should apply filters dynamically
+    public List<AuditLog> queryAuditLogs() {
         return this.auditRepositoryTransientDb.findAll();
     }
 
@@ -56,6 +48,10 @@ public class AuditService {
     public List<AuditLog> advancedSearch(AuditSearchRequest request) {
         // Implement Elasticsearch or DB query logic
         return this.auditRepositoryTransientDb.advancedSearch(request);
+    }
+
+    public DeletionResult deleteEvent(String eventId) {
+        return this.auditRepositoryTransientDb.deleteEvent(eventId);
     }
 }
 

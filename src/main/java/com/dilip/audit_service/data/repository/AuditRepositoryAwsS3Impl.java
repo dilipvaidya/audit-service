@@ -1,6 +1,7 @@
 package com.dilip.audit_service.data.repository;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.dilip.audit_service.common.DeletionResult;
 import com.dilip.audit_service.data.entity.AuditLog;
 import com.dilip.audit_service.data.entity.AuditSearchRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,6 +89,11 @@ public class AuditRepositoryAwsS3Impl implements AuditRepository {
                 .filter(log -> request.getChangedByUserId() == null ||
                         (log.getChangedBy() != null && request.getChangedByUserId().equals(log.getChangedBy().getUserId())))
                 .toList();
+    }
+
+    @Override
+    public DeletionResult deleteEvent(String eventId) {
+        return new DeletionResult.DeletionSuccess(0);
     }
 }
 
