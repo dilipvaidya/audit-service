@@ -1,5 +1,6 @@
 package com.dilip.audit_service.controller;
 
+import com.dilip.audit_service.common.DeletionResult;
 import com.dilip.audit_service.data.entity.AuditLog;
 import com.dilip.audit_service.data.entity.AuditSearchRequest;
 import com.dilip.audit_service.services.AuditService;
@@ -15,10 +16,8 @@ import java.util.Optional;
 @RequestMapping("/api/audit")
 public class AuditController {
 
-    @Autowired
     private final AuditService auditService;
 
-    @Autowired
     public AuditController(AuditService auditService) {
         this.auditService = auditService;
     }
@@ -30,29 +29,8 @@ public class AuditController {
     }
 
     @GetMapping("/logs")
-    public ResponseEntity<List<AuditLog>> getAuditLogs(
-            @RequestParam Optional<String> startTime,
-            @RequestParam Optional<String> endTime,
-            @RequestParam Optional<String> entityType,
-            @RequestParam Optional<String> entityId,
-            @RequestParam Optional<String> eventType,
-            @RequestParam Optional<String> sourceService,
-            @RequestParam Optional<String> changedByUserId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam Optional<String> sort
-    ) {
-        List<AuditLog> logs = auditService.queryAuditLogs(
-                startTime,
-                endTime,
-                entityType,
-                entityId,
-                eventType,
-                sourceService,
-                changedByUserId,
-                page,
-                size,
-                sort);
+    public ResponseEntity<List<AuditLog>> getAuditLogs() {
+        List<AuditLog> logs = auditService.queryAuditLogs();
         return ResponseEntity.ok(logs);
     }
 
@@ -69,9 +47,24 @@ public class AuditController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PostMapping("/query")
+    @GetMapping("/query")
     public ResponseEntity<List<AuditLog>> advancedSearch(@RequestBody AuditSearchRequest request) {
         List<AuditLog> results = auditService.advancedSearch(request);
         return ResponseEntity.ok(results);
+    }
+
+    @DeleteMapping("/logs/event/{eventId}")
+    public ResponseEntity<?> deleteEvent(@PathVariable String eventId) {
+
+        DeletionResult deletionResult = auditService.deleteEvent(eventId);
+        if(deletionResult instanceof DeletionResult.DeletionNotFound) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(((DeletionResult.DeletionNotFound) deletionResult).message());
+        } else if(deletionResult instanceof DeletionResult.DeletionFailure) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(((DeletionResult.DeletionFailure) deletionResult).reason()); // 500
+        }
+
+        return ResponseEntity.ok("deleted");
     }
 }

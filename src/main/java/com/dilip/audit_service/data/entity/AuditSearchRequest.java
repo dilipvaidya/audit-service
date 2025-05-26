@@ -16,6 +16,7 @@ public class AuditSearchRequest {
     private String endTime;
     private String entityType;
     private String entityId;
+    private String eventId;
     private String eventType;
     private String sourceService;
     private String changedByUserId;
