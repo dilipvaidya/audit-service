@@ -9,12 +9,17 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
+
 @Data
 @Getter
 @Setter
 @ToString
 public class AuditLog {
     private String eventId;
+    @Field(type = FieldType.Date, format = DateFormat.date_time)
     private Instant timestamp;
     private String sourceService;
     private String eventType;

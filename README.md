@@ -355,3 +355,12 @@ PUT /audit-logs
 | **Maturity**           | Community, documentation, and long-term support                         | ✅ Very mature                | ✅ Mature                   | ✅ Mature                  | ✅ Backed by AWS                  | ⚠️ Niche, low-level              |
 
 </details>
+
+<details>
+<summary>what I would do different next time working on this project </summary>
+1. Since we have to deploy the application on CentOS container with provided Tomcat, I would first develop a basic 
+service version and work on deployment of that through CI/CD pipeline followed by the monitoring/actuator so that
+while integrating with different data stores (ES, MinIO, AWSS3), I can also keep testing there health. 
+adding functionality would come later once the basic app is ready and getting deployed through CI/CD. 
+This way I can make consistent progress by adding required functionality.
+</details>
