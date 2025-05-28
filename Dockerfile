@@ -1,12 +1,9 @@
-
 # Stage 1: Build the WAR
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 
 # Copy pom.xml first and resolve dependencies (cache-friendly)
 COPY pom.xml .
-COPY minio-bucket-init.sh .
-COPY wait-for-it.sh .
 RUN mvn dependency:go-offline
 
 # Copy all source files
@@ -16,6 +13,11 @@ RUN mvn clean package -DskipTests
 # Stage 2: Base CentOS + Tomcat Runtime
 FROM centos:7
 
+ARG JDK_URL="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.10+7/OpenJDK17U-jdk_x64_linux_hotspot_17.0.10_7.tar.gz"
+#ARG TOMCAT_URL="https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz"
+ARG TOMCAT_URL="https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.24/bin/apache-tomcat-10.1.24.tar.gz"
+ARG MC_URL="https://dl.min.io/client/mc/release/linux-amd64/mc"
+
 # Install Java & other utils
 RUN sed -i 's|mirrorlist=|#mirrorlist=|g' /etc/yum.repos.d/CentOS-Base.repo && \
     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Base.repo && \
@@ -23,13 +25,13 @@ RUN sed -i 's|mirrorlist=|#mirrorlist=|g' /etc/yum.repos.d/CentOS-Base.repo && \
     yum clean all
 
 # Install JDK 17 on CentOS 7 (via Adoptium)
-RUN curl -L -o openjdk17.tar.gz https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.10+7/OpenJDK17U-jdk_x64_linux_hotspot_17.0.10_7.tar.gz && \
+RUN curl -L -o openjdk17.tar.gz ${JDK_URL} && \
     mkdir -p /opt/java-17-openjdk && \
     tar -xzf openjdk17.tar.gz -C /opt/java-17-openjdk --strip-components=1 && \
     rm openjdk17.tar.gz
 
 # Install mc and dependencies
-RUN wget https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/local/bin/mc && \
+RUN wget $MC_URL -O /usr/local/bin/mc && \
     chmod +x /usr/local/bin/mc
 
 # Set environment
@@ -38,16 +40,26 @@ ENV CATALINA_HOME=/opt/tomcat
 ENV PATH=$CATALINA_HOME/bin:$PATH
 
 # Install Tomcat
-RUN wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz -O /tmp/tomcat.tar.gz && \
+RUN wget $TOMCAT_URL -O /tmp/tomcat.tar.gz && \
     mkdir -p $CATALINA_HOME && \
     tar -xzf /tmp/tomcat.tar.gz -C $CATALINA_HOME --strip-components=1 && \
     rm /tmp/tomcat.tar.gz
 
 # Optionally remove the default ROOT,docs & examples.
-RUN rm -rf $CATALINA_HOME/webapps/*
+# Enable Debug Logging in Tomcat
+RUN echo -e "\n\ndelegate=false" >> $CATALINA_HOME/conf/catalina.properties && \
+    echo -e "\n\norg.apache.catalina.loader.WebappClassLoaderBase.level=FINE" >> $CATALINA_HOME/conf/logging.properties && \
+    rm -rf $CATALINA_HOME/webapps/*
+
+# Optionally remove the default ROOT,docs & examples.
+#RUN rm -rf $CATALINA_HOME/webapps/*
 
 # Copy WAR
 COPY --from=build /app/target/*.war $CATALINA_HOME/webapps/audit-service.war
+#COPY --from=build /app/target/*.war $CATALINA_HOME/webapps/ROOT.war
+
+# Enable Debug Logging in Tomcat
+#RUN echo -e "\norg.apache.catalina.loader.WebappClassLoaderBase.level = FINE" >> $CATALINA_HOME/conf/logging.properties
 
 # Copy scripts (for runtime use)
 COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh

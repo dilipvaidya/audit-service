@@ -31,11 +31,27 @@ public class SecurityConfig {
                         // Allow POST to /api/audit/logs without authentication
                         .requestMatchers(HttpMethod.POST, "/api/audit/logs").permitAll()
 
+                        // Actuator endpoint ADMIN only
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
+
                         // Allow all other requests
                         .anyRequest().permitAll()
                 )
                 .httpBasic(Customizer.withDefaults())
-                .csrf().disable();
+
+                /*
+                 #1. if need CSRF protection (for browser apps):
+                 .csrf(csrf -> csrf
+                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                 )
+                 #2. For REST APIs Only (no browser clients):
+                    Keeping CSRF disabled is acceptable (as in your current config)
+                    Ensure you use other protections like:
+                        HTTPS
+                        CORS restrictions
+                        Rate limiting
+                 */
+                .csrf(csrf -> csrf.disable());
 
         return http.build();
     }
